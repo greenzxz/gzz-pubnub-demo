@@ -1,1 +1,1 @@
-web: gunicorn gettingstarted.wsgi --log-file -
+web: gunicorn gzz_pubnub_demo.wsgi --log-file -
