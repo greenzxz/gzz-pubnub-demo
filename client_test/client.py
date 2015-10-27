@@ -1,14 +1,24 @@
-import requests
 import time
 import threading
+import requests
+import json
 
 from pubnub import Pubnub
 
-default_publish_key = "demo"
-default_subscribe_key = "demo"
+PUBLISH_KEY = "pub-c-bc724c66-7439-42cc-ac8a-c1277dd51544"
+#subscribe_key = "sub-c-80b8bd2c-7c24-11e5-8495-02ee2ddab7fe"
 
-default_channel = "gzz_private_channel"
+DEFAULT_CHANNEL='gzz-private-channel'
 
+DEFAULT_URL_BASE="http://%s:%d"
+
+DEFAULT_HOST="localhost"
+DEFAULT_PORT=5000
+
+DEFAULT_APP_BASE="chat"
+
+LOGIN_URI="login"
+SEND_URI="send_msg"
 
 class Pubnub_Conn():
     """
@@ -25,7 +35,7 @@ class Pubnub_Conn():
                               connect=self.connect_cb, reconnect=self.reconnect_cb, disconnect=self.disconnect_cb)
 
     def incoming_message(self, message, channel):
-        print(message)
+        print("%s: %s" % (channel, message))
 
     def error_cb(self, message):
         print("\tERROR : " + str(message))
@@ -56,31 +66,42 @@ class Pubnub_Conn():
     def print_status(self):
         print("\nCurrently connected to channel '%s'" % self.channel)
 
+def get_subscription_key():
+    uri = DEFAULT_URL_BASE % (DEFAULT_HOST, DEFAULT_PORT) + "/" + DEFAULT_APP_BASE + "/" + LOGIN_URI
+    resp = requests.post(uri, {'username': "anonymous", "password": "bad_pw"})
 
-def main_loop(pubnub_conn):
-    """
-    Takes a PubNub connection and loops a basic chat program by taking all inputs and pushing them as messages to the
-    connection directly.
-    :param pubnub_conn: Established connection object
-    :return: N/A
-    """
-    pubnub_conn.wait_until_ready()
-    pubnub_conn.print_status()
+    print uri
+    print resp
+    server_data = resp.json()
 
-    print "Input messages at the prompt.  Type 'exit()' to quit.\n"
+    return (server_data['sub_key'], server_data['channel'])
 
+def main_loop(send_uri):
     while(True):
         msg = raw_input("> ")
         if msg == "exit()":
+            print "Goodbye!"
             break
-        pubnub_conn.publish(msg)
-        time.sleep(1)
 
+        if len(msg) > 0:
+            resp = requests.post(send_uri, {"text": msg, "source": "anonymous"})
+            time.sleep(1)
+
+def default_listener():
+    sub_key, channel = get_subscription_key()
+
+    pubnub = Pubnub(publish_key="", subscribe_key=sub_key, ssl_on=False)
+    conn = Pubnub_Conn(pubnub, channel)
+
+    conn.wait_until_ready()
+    conn.print_status()
+
+    print "Input messages at the prompt.  Type 'exit()' to quit.\n"
+
+    send_uri = DEFAULT_URL_BASE % (DEFAULT_HOST, DEFAULT_PORT) + "/" + DEFAULT_APP_BASE + "/" + SEND_URI
+    main_loop(send_uri)
+
+    conn.discontinue()
 
 if (__name__ == "__main__"):
-    pubnub = Pubnub(publish_key=default_publish_key, subscribe_key=default_subscribe_key, ssl_on=False)
-
-    conn = Pubnub_Conn(pubnub, default_channel)
-
-    main_loop(conn)
-    conn.discontinue()
+    default_listener()
