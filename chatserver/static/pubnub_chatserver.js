@@ -24,7 +24,7 @@
     function loadChannel() {
         function loadChannelCallback(text) {
             var json_out = JSON.parse(text);
-            document.getElementById("test_output").innerHTML = "<b>" + json_out['channel'] + "</b>";
+            document.getElementById("channel_name").innerHTML = "<b>" + json_out['channel'] + "</b>";
         }
 
         httpGetAsync('/chat/login', loadChannelCallback);
