@@ -1,0 +1,51 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+
+    <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+    <script src=http://cdn.pubnub.com/pubnub.min.js></script>
+    <script src="{% static "pubnub_chatserver.js" %}"></script>
+
+</head>
+<body>
+    <div id="SplashWelcome">Welcome to a simple chat, powered by pubnub.</div>
+
+    <br />
+    <!-- Login page -->
+    <div data-role="page" id='loginPage'>
+        Type your username below:<br/>
+        <input type="text" name="name" id="username" placeholder="Diplay Name" />
+        <a href="#" id="startChatButton" data-role="button">Enter</a>
+    </div> <!-- /page -->
+
+    <!-- Chat page -->
+    <div data-role="page" id="chatPage">
+
+        <div id="help">
+            {% include "chatserver/help.html" %}
+        </div>
+
+
+        <div id='chatBox'>
+            <br />
+            <div id=channel_name></div>
+            <br />
+
+            <div><input id=input placeholder=your-chat-here /></div>
+
+            <br />
+            <br />
+
+            <div id=alert></div>
+
+            <br />
+            Chat Output
+            <div id=box></div>
+        </div>
+    </div> <!-- /page -->
+</body>
+</html>

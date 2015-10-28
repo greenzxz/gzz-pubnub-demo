@@ -1,4 +1,15 @@
-(function () {
+$(document).ready(function() {
+    var startButton = $("#startChatButton"),
+        username = '',
+        channel_name = ''
+
+
+        usernameInput = $('#username'),
+        pages = {
+            login: $("#loginPage"),
+            chat: $("#chatPage"),
+        };
+
     function httpPostAsync(theUrl, callback, payload) {
 
         function getCookie(name) {
@@ -16,7 +27,6 @@
             }
             return cookieValue;
         }
-
 
         function formatParams(param_object) {
             var params = ""
@@ -58,73 +68,83 @@
         http_req.send();
     }
 
-    function loadChannel() {
-        function loadChannelCallback(text) {
-            console.log(text)
-            var json_out = JSON.parse(text);
-            document.getElementById("channel_name").innerHTML = "<b>" + json_out['channel'] + "</b>";
+    ///// LoginView
+    function LoginView() {
+        clearAll();
+        document.getElementById("loginPage").style.display="inherit";
+        startButton.off('click');
+        startButton.click(function (event) {
+          if(usernameInput.val() != '') {
+            username = usernameInput.val();
+            chatView()
+          }
+        });
+    }
 
-            start_chatting(json_out.channel, json_out.subscribe_key, json_out.publish_key);
+    function chatView() {
+        clearAll();
+
+        document.getElementById("chatPage").style.display="inherit";
+
+        document.getElementById("SplashWelcome").innerHTML =
+            "Welcome, " + username + ", to our simple pubnub chat.<br />"
+
+        function loadChannel() {
+            function loadChannelCallback(text) {
+                console.log(text)
+                var json_out = JSON.parse(text);
+                document.getElementById("channel_name").innerHTML = "<b>" + json_out['channel'] + "</b>";
+
+                start_chatting(json_out.channel, json_out.subscribe_key, json_out.publish_key);
+            }
+
+            httpGetAsync('/chat/get_keys', loadChannelCallback);
         }
+        function start_chatting(channel_name, subscribe_key, publish_key) {
+            var pubnub_conn = PUBNUB.init({
+                publish_key: publish_key,
+                subscribe_key: subscribe_key
+            });
 
-        httpGetAsync('/chat/login', loadChannelCallback);
+            var box = PUBNUB.$('box'), input = PUBNUB.$('input');
+
+            function handle_message(message) {
+                if (message.msg_type == 'alert') {
+                    PUBNUB.$('alert').innerHTML = "<b>" + ('' + message.text).replace( /[<>]/g, '' ) + "</b>";
+                    return;
+                }
+                else {
+                    PUBNUB.$('alert').innerHTML = "";
+                }
+                box.innerHTML = (''+message.user).replace( /[<>]/g, '' ) + ': ' +
+                                (''+message.text).replace( /[<>]/g, '' ) + '<br />' + box.innerHTML;
+
+            };
+
+            function new_message(event) {
+                if ((event.keyCode || event.charCode) === 13) {
+                    httpPostAsync('/chat/send_msg', function(resp) {}, {
+                        'user': username,
+                        'text': input.value,
+                        'x' : (input.value=''),
+                    });
+                }
+            };
+
+            PUBNUB.bind('keyup', input, new_message);
+            pubnub_conn.subscribe( {
+                channel: channel_name,
+                message: handle_message
+            });
+        }
+        loadChannel();
     }
 
-    loadChannel();
-
-    function start_chatting_basic(channel_name) {
-        var box = PUBNUB.$('box'), input = PUBNUB.$('input'), channel = channel_name;
-
-        PUBNUB.subscribe({
-            channel  : channel,
-            callback : function(text) {
-                box.innerHTML = (''+text['user']).replace( /[<>]/g, '' ) + ': ' +
-                                (''+text['message']).replace( /[<>]/g, '' ) + '<br />' + box.innerHTML
-                                }
-        });
-        PUBNUB.bind( 'keyup', input, function(e) {
-            (e.keyCode || e.charCode) === 13 && PUBNUB.publish({
-                channel : channel, message : {'message': input.value, 'user': 'anonymous'}, x : (input.value='')
-            })
-        } );
+    function clearAll() {
+        document.getElementById("loginPage").style.display="none";
+        document.getElementById("chatPage").style.display="none";
     }
 
-    function start_chatting(channel_name, subscribe_key, publish_key) {
-        var pubnub_conn = PUBNUB.init({
-            publish_key: publish_key,
-            subscribe_key: subscribe_key
-        });
+    LoginView();
 
-        var box = PUBNUB.$('box'), input = PUBNUB.$('input');
-
-        function handle_message(message) {
-            console.log(message)
-            if (message.msg_type == 'alert') {
-                PUBNUB.$('alert').innerHTML = "<b>" + ('' + message.text).replace( /[<>]/g, '' ) + "</b>";
-                return;
-            }
-            else {
-                PUBNUB.$('alert').innerHTML = "";
-            }
-            box.innerHTML = (''+message.user).replace( /[<>]/g, '' ) + ': ' +
-                            (''+message.text).replace( /[<>]/g, '' ) + '<br />' + box.innerHTML;
-
-        };
-
-        function new_message(event) {
-            if ((event.keyCode || event.charCode) === 13) {
-                httpPostAsync('/chat/send_msg', function(resp) {}, {
-                    'user': "anonymous",
-                    'text': input.value,
-                    'x' : (input.value=''),
-                });
-            }
-        };
-
-        PUBNUB.bind('keyup', input, new_message);
-        pubnub_conn.subscribe( {
-            channel: channel_name,
-            message: handle_message
-        });
-    }
-})();
+});

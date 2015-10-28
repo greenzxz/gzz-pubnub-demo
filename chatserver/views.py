@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
-from django.template import RequestContext, Engine
+from django.template import RequestContext
 from django.contrib.auth import authenticate, login
 
 import json
@@ -10,35 +10,24 @@ from .models import Channel
 
 from pubnub_conn import myPubnubConn
 
-
 # Create your views here.
+title = "Green's Simple Chatty"
 
-def index(request):
-    channels = Channel.objects.all()
+def chat(request):
+    """
+    Primary HTML page that does the chatting.
+    :param request:
+    :return:
+    """
     context = RequestContext(request, {
-        'channel_count' : len(channels),
-        'channel_name' :  myPubnubConn.default_channel,
+        'title' : title,
     })
-    return render(request, 'chatserver/index.html', context=context)
-
-
-def create(request):
-    try:
-        channel_text=str(request.POST['name'])
-    except (KeyError):
-        channel_text="a-default-channel"
-
-    try:
-        channel = Channel.objects.get(pk=channel_text)
-    except (KeyError, Channel.DoesNotExist):
-        Channel(channel_name=channel_text).save()
-
-    return HttpResponseRedirect(reverse('chatserver:index'))
+    return render(request, 'chatserver/chat.html', context=context)
 
 def sent(request):
     return HttpResponse("Message sent.")
 
-def login_user(request):
+def get_user_keys(request):
     """
     Logins a user by confirming the user exists and returns the subscription key so they can be on the same network
     :param request:
