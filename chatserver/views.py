@@ -2,7 +2,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.template import RequestContext, Engine
-#from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login
 
 import json
 
@@ -44,14 +44,14 @@ def login_user(request):
     :param request:
     :return:
     """
-    template = Engine.get_default().from_string("{\"sub_key\": \"{{ subscribe_key }}\", \"channel\": \"{{ channel }}\"}")
-    c = RequestContext(request, {
+    pubnub_details = {
         'subscribe_key': myPubnubConn.subscribe_key,
+        'publish_key': myPubnubConn.publish_key,
         'channel': myPubnubConn.default_channel,
-    })
+    }
     #user = authenticate(username=request.POST['username'], password=request.POST['password'])
     #login(request, user)
-    return HttpResponse(template.render(c))
+    return render(request, 'chatserver/pub_authorized.template', pubnub_details)
 
 def send(request):
     # Future development: use shared sessions to store this connection rather than recreate one each time

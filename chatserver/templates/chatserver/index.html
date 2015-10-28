@@ -6,14 +6,14 @@
     <meta charset="UTF-8">
     <title>Green Zhang's Pubnub Chatty</title>
 
-
+<script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
 <script src=http://cdn.pubnub.com/pubnub.min.js></script>
 <script src="{% static "pubnub_chatserver.js" %}"></script>
 
 </head>
 <body>
 
-<h1>There are {{ channel_count }} active channels.</h1>
+<h1>Welcome to Green's simple chat application.</h1>
 
 <div class="basic">
     {% include "chatserver/help.html" %}
@@ -28,8 +28,5 @@ Chat Output
 <div id=box></div>
 
 
-<script src="{% static "pub_chat.js" %}"></script>
-
-<div id="test_output"><br /></div>
 </body>
 </html>

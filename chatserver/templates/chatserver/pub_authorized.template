@@ -1,0 +1,1 @@
+{"publish_key": "{{ publish_key }}", "subscribe_key": "{{ subscribe_key }}", "channel": "{{ channel }}"}
