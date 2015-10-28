@@ -1,8 +1,7 @@
 $(document).ready(function() {
     var startButton = $("#startChatButton"),
         username = '',
-        channel_name = ''
-
+        channel_name = '',
 
         usernameInput = $('#username'),
         pages = {
@@ -68,7 +67,7 @@ $(document).ready(function() {
         http_req.send();
     }
 
-    ///// LoginView
+    ///// Display the initial login page
     function LoginView() {
         clearAll();
         document.getElementById("loginPage").style.display="inherit";
@@ -81,6 +80,7 @@ $(document).ready(function() {
         });
     }
 
+    //// Display the main chat view
     function chatView() {
         clearAll();
 
@@ -91,7 +91,6 @@ $(document).ready(function() {
 
         function loadChannel() {
             function loadChannelCallback(text) {
-                console.log(text)
                 var json_out = JSON.parse(text);
                 document.getElementById("channel_name").innerHTML = "<b>" + json_out['channel'] + "</b>";
 
@@ -103,26 +102,32 @@ $(document).ready(function() {
         function start_chatting(channel_name, subscribe_key, publish_key) {
             var pubnub_conn = PUBNUB.init({
                 publish_key: publish_key,
-                subscribe_key: subscribe_key
+                subscribe_key: subscribe_key,
+                ssl_on: true,
             });
 
             var box = PUBNUB.$('box'), input = PUBNUB.$('input');
 
             function handle_message(message) {
+                // function which handles incoming messages from Pubnub
                 if (message.msg_type == 'alert') {
+                    // some server alert message
                     PUBNUB.$('alert').innerHTML = "<b>" + ('' + message.text).replace( /[<>]/g, '' ) + "</b>";
                     return;
                 }
                 else {
                     PUBNUB.$('alert').innerHTML = "";
                 }
+                // add the message into the box display
                 box.innerHTML = (''+message.user).replace( /[<>]/g, '' ) + ': ' +
                                 (''+message.text).replace( /[<>]/g, '' ) + '<br />' + box.innerHTML;
 
             };
 
             function new_message(event) {
+                // User typed 'enter' into the input box and ready to send a new message
                 if ((event.keyCode || event.charCode) === 13) {
+                    // sending the content to the backend server as this client can't publish
                     httpPostAsync('/chat/send_msg', function(resp) {}, {
                         'user': username,
                         'text': input.value,
@@ -145,6 +150,7 @@ $(document).ready(function() {
         document.getElementById("chatPage").style.display="none";
     }
 
+    // start with the login view
     LoginView();
 
 });

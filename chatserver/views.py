@@ -25,6 +25,11 @@ def chat(request):
     return render(request, 'chatserver/chat.html', context=context)
 
 def sent(request):
+    """
+    Empty page meant to assert that a message has been published.  Does not guarantee a successful message though.
+    :param request:
+    :return:
+    """
     return HttpResponse("Message sent.")
 
 def get_user_keys(request):
@@ -44,7 +49,9 @@ def get_user_keys(request):
 
 def send(request):
     # Future development: use shared sessions to store this connection rather than recreate one each time
+
     conn = myPubnubConn.MyPubnubConn(channel=myPubnubConn.default_channel)
+
     try:
         message_text = request.POST['text']
         message_source = request.POST['user']

@@ -8,12 +8,18 @@ from pubnub import Pubnub
 publish_key = "pub-c-bc724c66-7439-42cc-ac8a-c1277dd51544"
 subscribe_key = "sub-c-80b8bd2c-7c24-11e5-8495-02ee2ddab7fe"
 
+cipher_key = "XJKBQ0KF592YNGZA160D"
+
 default_channel = "gzz_chat_lobby"
 
 class MyPubnubConn():
 
     def __init__(self, channel):
-        self.conn = Pubnub(publish_key=publish_key, subscribe_key=subscribe_key, ssl_on=True)
+        self.conn = Pubnub(publish_key=publish_key, subscribe_key=subscribe_key, ssl_on=True,
+                           # cipherkey randomly generated for purposes of PoC, but it is too short and needs to be
+                           #   securely stored.
+                           # cipher_key=cipher_key
+                           )
         self.channel = channel
         self.subscribed = threading.Event()
 
