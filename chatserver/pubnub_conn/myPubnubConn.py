@@ -12,9 +12,9 @@ default_channel = "gzz_chat_lobby"
 
 class MyPubnubConn():
 
-    def __init__(self):
-        self.conn = Pubnub(publish_key=publish_key, subscribe_key=subscribe_key, ssl_on=False)
-        self.channel = default_channel
+    def __init__(self, channel):
+        self.conn = Pubnub(publish_key=publish_key, subscribe_key=subscribe_key, ssl_on=True)
+        self.channel = channel
         self.subscribed = threading.Event()
 
         # server doesn't need to subscribe, only publish

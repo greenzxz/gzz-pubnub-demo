@@ -1,5 +1,34 @@
 (function () {
     function httpPostAsync(theUrl, callback, payload) {
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+
+        function formatParams(param_object) {
+            var params = ""
+            for (var key in param_object) {
+                if (param_object.hasOwnProperty(key)) {
+                    params += key + '=' + param_object[key] + "&"
+                }
+            }
+            return params;
+        }
+
+
         var http_req = new XMLHttpRequest();
         http_req.onreadystatechange = function () {
             if (http_req.readyState == 4 && http_req.status == 200)
@@ -7,7 +36,15 @@
         }
 
         http_req.open("POST", theUrl, true);
-        http_req.send(payload);
+        http_req.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+
+
+        var params = formatParams(payload);
+        http_req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        http_req.setRequestHeader("Content-length", params.length);
+        http_req.setRequestHeader("Connection", "close");
+
+        http_req.send(params);
     }
 
     function httpGetAsync(theUrl, callback) {
@@ -61,15 +98,27 @@
         var box = PUBNUB.$('box'), input = PUBNUB.$('input');
 
         function handle_message(message) {
+            console.log(message)
+            if (message.msg_type == 'alert') {
+                PUBNUB.$('alert').innerHTML = "<b>" + ('' + message.text).replace( /[<>]/g, '' ) + "</b>";
+                return;
+            }
+            else {
+                PUBNUB.$('alert').innerHTML = "";
+            }
             box.innerHTML = (''+message.user).replace( /[<>]/g, '' ) + ': ' +
                             (''+message.text).replace( /[<>]/g, '' ) + '<br />' + box.innerHTML;
 
         };
 
         function new_message(event) {
-            (event.keyCode || event.charCode) === 13 && pubnub_conn.publish({
-                channel : channel_name, message : {'text': input.value, 'user': 'anonymous'}, x : (input.value='')
-            })
+            if ((event.keyCode || event.charCode) === 13) {
+                httpPostAsync('/chat/send_msg', function(resp) {}, {
+                    'user': "anonymous",
+                    'text': input.value,
+                    'x' : (input.value=''),
+                });
+            }
         };
 
         PUBNUB.bind('keyup', input, new_message);

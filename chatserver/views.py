@@ -51,17 +51,19 @@ def login_user(request):
     }
     #user = authenticate(username=request.POST['username'], password=request.POST['password'])
     #login(request, user)
-    return render(request, 'chatserver/pub_authorized.template', pubnub_details)
+    return render(request, 'chatserver/sub_authorized.template', pubnub_details)
 
 def send(request):
     # Future development: use shared sessions to store this connection rather than recreate one each time
-    conn = myPubnubConn.MyPubnubConn()
+    conn = myPubnubConn.MyPubnubConn(channel=myPubnubConn.default_channel)
     try:
-        message_text = str(request.POST['text'])
-        message_source = str(request.POST['source'])
-        conn.publish({'msg': message_text, 'source': message_source})
+        message_text = request.POST['text']
+        message_source = request.POST['user']
+        message_type = 'text'
     except (KeyError):
-        message_text = "Channel is ready for notifications."
-        conn.publish(message_text)
+        message_text = "Did not receive message from user."
+        message_source = "Chat server"
+        message_type = 'alert'
 
+    conn.publish({'text': message_text, 'user': message_source, 'msg_type' : message_type})
     return HttpResponseRedirect(reverse('chatserver:sent'))
