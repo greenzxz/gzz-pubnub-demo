@@ -1,19 +1,19 @@
 import time
 import threading
 import requests
-import json
 
 from pubnub import Pubnub
 
-PUBLISH_KEY = "pub-c-bc724c66-7439-42cc-ac8a-c1277dd51544"
-#subscribe_key = "sub-c-80b8bd2c-7c24-11e5-8495-02ee2ddab7fe"
+local = False
 
-DEFAULT_CHANNEL='gzz-private-channel'
-
-DEFAULT_URL_BASE="http://%s:%d"
-
-DEFAULT_HOST="localhost"
-DEFAULT_PORT=5000
+if local:
+    DEFAULT_URL_BASE="http://%s:%d"
+    DEFAULT_HOST="localhost"
+    DEFAULT_PORT=5000
+else:
+    DEFAULT_URL_BASE="https://%s:%d"
+    DEFAULT_HOST="gzz-pubnub-demo.herokuapp.com"
+    DEFAULT_PORT=443
 
 DEFAULT_APP_BASE="chat"
 

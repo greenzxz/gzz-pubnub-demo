@@ -9,5 +9,6 @@ urlpatterns = [
     #url(r'^channels$', views.channels, name='channels'),
     url(r'^create$', views.create, name='create'),
     url(r'^send_msg$', views.send, name='send'),
+    url(r'^send_message$', views.send_v2, name="sendv2"),
     url(r'^sent$', views.sent, name='sent'),
 ]

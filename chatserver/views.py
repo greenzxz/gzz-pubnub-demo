@@ -1,7 +1,8 @@
 from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
 from django.core.urlresolvers import reverse
-from django.contrib.auth import authenticate, login
-from django.views.decorators.csrf import csrf_exempt
+from django.template import RequestContext, Engine
+#from django.contrib.auth import authenticate, login
 
 import json
 
@@ -14,7 +15,12 @@ from pubnub_conn import myPubnubConn
 
 def index(request):
     channels = Channel.objects.all()
-    return HttpResponse("There are %d channels active." % (len(channels),))
+    context = RequestContext(request, {
+        'channel_count' : len(channels),
+        'channel_name' :  myPubnubConn.default_channel,
+    })
+    return render(request, 'chatserver/index.html', context=context)
+
 
 def create(request):
     try:
@@ -32,19 +38,21 @@ def create(request):
 def sent(request):
     return HttpResponse("Message sent.")
 
-@csrf_exempt
 def login_user(request):
     """
     Logins a user by confirming the user exists and returns the subscription key so they can be on the same network
     :param request:
     :return:
     """
+    template = Engine.get_default().from_string("{\"sub_key\": \"{{ subscribe_key }}\", \"channel\": \"{{ channel }}\"}")
+    c = RequestContext(request, {
+        'subscribe_key': myPubnubConn.subscribe_key,
+        'channel': myPubnubConn.default_channel,
+    })
     #user = authenticate(username=request.POST['username'], password=request.POST['password'])
     #login(request, user)
-    return HttpResponse(json.dumps({'sub_key': myPubnubConn.subscribe_key, 'channel': myPubnubConn.default_channel}))
+    return HttpResponse(template.render(c))
 
-
-@csrf_exempt
 def send(request):
     # Future development: use shared sessions to store this connection rather than recreate one each time
     conn = myPubnubConn.MyPubnubConn()

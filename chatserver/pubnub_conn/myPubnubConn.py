@@ -8,7 +8,7 @@ from pubnub import Pubnub
 publish_key = "pub-c-bc724c66-7439-42cc-ac8a-c1277dd51544"
 subscribe_key = "sub-c-80b8bd2c-7c24-11e5-8495-02ee2ddab7fe"
 
-default_channel = "gzz_private_channel"
+default_channel = "gzz_chat_lobby"
 
 class MyPubnubConn():
 
