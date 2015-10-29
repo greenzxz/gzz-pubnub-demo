@@ -5,7 +5,7 @@ from django.template import RequestContext
 from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-import json
+import bleach
 
 from .models import Channel
 
@@ -55,8 +55,8 @@ def send(request):
 
     try:
         channel = request.POST['channel']
-        message_text = request.POST['text']
-        message_source = request.POST['user']
+        message_text = bleach.clean(request.POST['text'], tags=[], attributes=[], styles=[], strip=True)
+        message_source = bleach.clean(request.POST['user'], tags=[], attributes=[], styles=[], strip=True)
         message_type = 'text'
     except (KeyError):
         channel=myPubnubConn.default_channel

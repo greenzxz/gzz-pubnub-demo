@@ -1,4 +1,8 @@
 $(document).ready(function() {
+    function quick_dirty_sanitize(input) {
+        return (''+input).replace( /[<>]/g, '' )
+    }
+
     var startButton = $("#startChatButton"),
         username = '',
         channel_name = '',
@@ -72,7 +76,7 @@ $(document).ready(function() {
         startButton.off('click');
         startButton.click(function (event) {
           if(usernameInput.val() != '') {
-            username = usernameInput.val();
+            username = quick_dirty_sanitize(usernameInput.val());
             chatView()
           }
         });
@@ -117,8 +121,8 @@ $(document).ready(function() {
                     PUBNUB.$('alert').innerHTML = "";
                 }
                 // add the message into the box display
-                box.innerHTML = (''+message.user).replace( /[<>]/g, '' ) + ': ' +
-                                (''+message.text).replace( /[<>]/g, '' ) + '<br />' + box.innerHTML;
+                box.innerHTML = quick_dirty_sanitize(message.user) + ': ' +
+                                quick_dirty_sanitize(message.text) + '<br />' + box.innerHTML;
 
             };
 
