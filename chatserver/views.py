@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.contrib.auth import authenticate, login
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 import json
 
@@ -13,6 +14,7 @@ from pubnub_conn import myPubnubConn
 # Create your views here.
 title = "Green's Simple Chatty"
 
+@ensure_csrf_cookie
 def chat(request):
     """
     Primary HTML page that does the chatting.
@@ -32,6 +34,7 @@ def sent(request):
     """
     return HttpResponse("Message sent.")
 
+@ensure_csrf_cookie
 def get_user_keys(request):
     """
     Logins a user by confirming the user exists and returns the subscription key so they can be on the same network
