@@ -94,13 +94,13 @@ $(document).ready(function() {
         function loadChannel() {
             function loadChannelCallback(text) {
                 var json_out = JSON.parse(text);
-                document.getElementById("channel_name").innerHTML = "<b>" + json_out['channel'] + "</b>";
 
                 start_chatting(json_out.channel, json_out.subscribe_key, json_out.publish_key);
             }
 
             httpGetAsync('/chat/get_keys', loadChannelCallback);
         }
+
         function start_chatting(channel_name, subscribe_key, publish_key) {
             var pubnub_conn = PUBNUB.init({
                 publish_key: publish_key,
@@ -130,20 +130,39 @@ $(document).ready(function() {
                 // User typed 'enter' into the input box and ready to send a new message
                 if ((event.keyCode || event.charCode) === 13) {
                     // sending the content to the backend server as this client can't publish
-                    httpPostAsync('/chat/send_msg', function(resp) {}, {
-                        'user': username,
-                        'text': input.value,
-                        'x' : (input.value=''),
-                        'channel': channel_name,
-                    });
+
+                    if (input.value.indexOf("/join ") == 0) {
+                        channel = input.value.substring(6)
+                        switch_channel(channel)
+                        input.value=''
+                    }
+                    else {
+                        httpPostAsync('/chat/send_msg', function(resp) {}, {
+                            'user': username,
+                            'text': input.value,
+                            'channel': channel_name,
+                        });
+                        input.value=''
+                    }
                 }
             };
 
+            function switch_channel(new_channel) {
+                pubnub_conn.unsubscribe( {channel: channel_name });
+                channel_name = new_channel;
+                start_subscription();
+            }
+
+            function start_subscription() {
+                document.getElementById("channel_name").innerHTML = "<b>" + channel_name + "</b>";
+                pubnub_conn.subscribe( {
+                    channel: channel_name,
+                    message: handle_message
+                });
+            }
+
             PUBNUB.bind('keyup', input, new_message);
-            pubnub_conn.subscribe( {
-                channel: channel_name,
-                message: handle_message
-            });
+            start_subscription();
         }
         loadChannel();
     }
