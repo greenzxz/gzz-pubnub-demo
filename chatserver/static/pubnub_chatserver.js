@@ -50,8 +50,6 @@ $(document).ready(function() {
 
         var params = formatParams(payload);
         http_req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        http_req.setRequestHeader("Content-length", params.length);
-        http_req.setRequestHeader("Connection", "close");
 
         http_req.send(params);
     }
