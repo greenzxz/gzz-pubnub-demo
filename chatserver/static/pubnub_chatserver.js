@@ -105,7 +105,7 @@ $(document).ready(function() {
             var pubnub_conn = PUBNUB.init({
                 publish_key: publish_key,
                 subscribe_key: subscribe_key,
-                ssl_on: true,
+                ssl: true,
             });
 
             var box = PUBNUB.$('box'), input = PUBNUB.$('input');
