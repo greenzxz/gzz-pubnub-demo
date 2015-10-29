@@ -132,6 +132,7 @@ $(document).ready(function() {
                         'user': username,
                         'text': input.value,
                         'x' : (input.value=''),
+                        'channel': channel_name,
                     });
                 }
             };

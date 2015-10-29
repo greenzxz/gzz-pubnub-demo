@@ -50,16 +50,17 @@ def get_user_keys(request):
 def send(request):
     # Future development: use shared sessions to store this connection rather than recreate one each time
 
-    conn = myPubnubConn.MyPubnubConn(channel=myPubnubConn.default_channel)
-
     try:
+        channel = request.POST['channel']
         message_text = request.POST['text']
         message_source = request.POST['user']
         message_type = 'text'
     except (KeyError):
+        channel=myPubnubConn.default_channel
         message_text = "Did not receive message from user."
         message_source = "Chat server"
         message_type = 'alert'
 
+    conn = myPubnubConn.MyPubnubConn(channel=channel)
     conn.publish({'text': message_text, 'user': message_source, 'msg_type' : message_type})
     return HttpResponseRedirect(reverse('chatserver:sent'))
