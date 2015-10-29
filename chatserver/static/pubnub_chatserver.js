@@ -110,7 +110,7 @@ $(document).ready(function() {
 
             var box = PUBNUB.$('box'), input = PUBNUB.$('input');
 
-            function handle_message(message) {
+            function handle_message(message, env, channel) {
                 // function which handles incoming messages from Pubnub
                 if (message.msg_type == 'alert') {
                     // some server alert message
@@ -121,7 +121,8 @@ $(document).ready(function() {
                     PUBNUB.$('alert').innerHTML = "";
                 }
                 // add the message into the box display
-                box.innerHTML = quick_dirty_sanitize(message.user) + ': ' +
+                box.innerHTML = quick_dirty_sanitize(channel) + " => " +
+                                quick_dirty_sanitize(message.user) + ': ' +
                                 quick_dirty_sanitize(message.text) + '<br />' + box.innerHTML;
 
             };
